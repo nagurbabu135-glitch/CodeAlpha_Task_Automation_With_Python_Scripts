@@ -1,0 +1,353 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AutoPy - Python Task Automation Playground</title>
+    
+    <!-- Google Fonts: Outfit & Fira Code -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Fira+Code:wght@400;500&family=Outfit:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    
+    <!-- FontAwesome for icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    
+    <!-- PrismJS for syntax highlighting -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/themes/prism-tomorrow.min.css">
+    
+    <!-- Custom CSS -->
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+</head>
+<body>
+    <div class="app-container">
+        <!-- Sidebar Navigation -->
+        <aside class="sidebar">
+            <div class="sidebar-brand">
+                <i class="fa-solid fa-bolt brand-icon"></i>
+                <h2>AutoPy</h2>
+            </div>
+            <nav class="sidebar-nav">
+                <a href="#overview" class="nav-item active" data-tab="overview">
+                    <i class="fa-solid fa-house"></i>
+                    <span>Overview</span>
+                </a>
+                <a href="#move-jpgs" class="nav-item" data-tab="move-jpgs">
+                    <i class="fa-solid fa-folder-open"></i>
+                    <span>File Organizer</span>
+                </a>
+                <a href="#extract-emails" class="nav-item" data-tab="extract-emails">
+                    <i class="fa-solid fa-envelope-open-text"></i>
+                    <span>Email Extractor</span>
+                </a>
+                <a href="#scrape-title" class="nav-item" data-tab="scrape-title">
+                    <i class="fa-solid fa-globe"></i>
+                    <span>Title Scraper</span>
+                </a>
+                <a href="#history" class="nav-item" data-tab="history" id="nav-history">
+                    <i class="fa-solid fa-clock-rotate-left"></i>
+                    <span>Run History</span>
+                </a>
+            </nav>
+            <div class="sidebar-footer">
+                <!-- User Profile Row -->
+                <div class="user-profile-row hidden" id="user-profile">
+                    <div class="user-avatar">
+                        <i class="fa-solid fa-user-astronaut"></i>
+                    </div>
+                    <div class="user-info">
+                        <span class="user-name" id="display-username">Username</span>
+                        <button id="logout-btn" class="logout-link" title="Logout">
+                            <i class="fa-solid fa-right-from-bracket"></i>
+                        </button>
+                    </div>
+                </div>
+                <!-- Status Row -->
+                <div class="status-indicator">
+                    <span class="pulse-dot green"></span>
+                    <span class="status-text">Server Active</span>
+                </div>
+            </div>
+        </aside>
+
+        <!-- Main Dashboard Content -->
+        <main class="main-content">
+            <!-- Header -->
+            <header class="main-header">
+                <div class="header-title">
+                    <h1>Python Task Automation</h1>
+                    <p class="subtitle">Execute, inspect, and learn local Python automation scripts</p>
+                </div>
+                <div class="header-actions">
+                    <button id="setup-demo-btn" class="btn btn-secondary">
+                        <i class="fa-solid fa-flask"></i> Setup Demo Workspace
+                    </button>
+                </div>
+            </header>
+
+            <div class="dashboard-content">
+                    
+                <!-- TAB 1: OVERVIEW -->
+                <div id="tab-overview" class="tab-pane active">
+                    <div class="glass-card welcome-card">
+                        <h3>Welcome to AutoPy Playground!</h3>
+                        <p>This application implements the tasks specified in <strong>Task 3: Task Automation with Python Scripts</strong>. Select a task from the sidebar, configure parameters, and run it locally.</p>
+                        
+                        <div class="task-spec-cards">
+                            <div class="spec-card" data-target-tab="move-jpgs">
+                                <div class="spec-icon"><i class="fa-solid fa-images"></i></div>
+                                <h4>1. JPG Organizer</h4>
+                                <p>Finds and moves all <code>.jpg</code> files from a source directory to a target directory. Uses <code>os</code> and <code>shutil</code> libraries.</p>
+                            </div>
+                            <div class="spec-card" data-target-tab="extract-emails">
+                                <div class="spec-icon"><i class="fa-solid fa-at"></i></div>
+                                <h4>2. Email Extractor</h4>
+                                <p>Scans text files, extracts all email addresses, and writes them to an output file. Uses <code>re</code> (regex).</p>
+                            </div>
+                            <div class="spec-card" data-target-tab="scrape-title">
+                                <div class="spec-icon"><i class="fa-solid fa-file-code"></i></div>
+                                <h4>3. Web Title Scraper</h4>
+                                <p>Requests a webpage URL, parses its content to find the <code>&lt;title&gt;</code>, and saves the text to a file. Uses <code>requests</code>.</p>
+                            </div>
+                        </div>
+
+                        <div class="demo-setup-alert">
+                            <h5><i class="fa-solid fa-circle-info"></i> Fast testing using the Demo Workspace</h5>
+                            <p>Don't have directories or files ready to test? Click <strong>"Setup Demo Workspace"</strong> above. It will generate folders and dummy files inside the app's directory so you can test all three tools instantly.</p>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- TAB 2: FILE ORGANIZER -->
+                <div id="tab-move-jpgs" class="tab-pane">
+                    <div class="glass-card">
+                        <div class="card-header">
+                            <span class="badge">TASK 1</span>
+                            <h3>File Organizer (JPG Mover)</h3>
+                        </div>
+                        <p class="card-desc">Scan a folder and move all JPG/JPEG files to a designated destination folder.</p>
+                        
+                        <div class="concepts-row">
+                            <span>Key Concepts:</span>
+                            <span class="tag">os</span>
+                            <span class="tag">shutil</span>
+                            <span class="tag">file handling</span>
+                        </div>
+
+                        <form id="form-move-jpgs" class="config-form">
+                            <div class="form-group">
+                                <label for="move-src">Source Directory Path</label>
+                                <div class="input-wrapper">
+                                    <input type="text" id="move-src" placeholder="C:/path/to/source/folder" required>
+                                    <button type="button" class="path-btn" data-target="move-src" title="Use Demo Path"><i class="fa-solid fa-paste"></i></button>
+                                </div>
+                                <small>Directory where the original .jpg files reside.</small>
+                            </div>
+                            <div class="form-group">
+                                <label for="move-dest">Destination Directory Path</label>
+                                <div class="input-wrapper">
+                                    <input type="text" id="move-dest" placeholder="C:/path/to/destination/folder" required>
+                                    <button type="button" class="path-btn" data-target="move-dest" title="Use Demo Path"><i class="fa-solid fa-paste"></i></button>
+                                </div>
+                                <small>Directory where files will be moved.</small>
+                            </div>
+                            <button type="submit" class="btn btn-primary btn-run">
+                                <i class="fa-solid fa-play"></i> Run JPG Organizer
+                            </button>
+                        </form>
+                    </div>
+                </div>
+
+                <!-- TAB 3: EMAIL EXTRACTOR -->
+                <div id="tab-extract-emails" class="tab-pane">
+                    <div class="glass-card">
+                        <div class="card-header">
+                            <span class="badge">TASK 2</span>
+                            <h3>Email Address Extractor</h3>
+                        </div>
+                        <p class="card-desc">Parse a text file, extract all valid emails using regular expressions, and save to a new list file.</p>
+                        
+                        <div class="concepts-row">
+                            <span>Key Concepts:</span>
+                            <span class="tag">re (regex)</span>
+                            <span class="tag">file handling</span>
+                        </div>
+
+                        <form id="form-extract-emails" class="config-form">
+                            <div class="form-group">
+                                <label for="extract-src">Source Text File Path</label>
+                                <div class="input-wrapper">
+                                    <input type="text" id="extract-src" placeholder="C:/path/to/source.txt" required>
+                                    <button type="button" class="path-btn" data-target="extract-src" title="Use Demo Path"><i class="fa-solid fa-paste"></i></button>
+                                </div>
+                                <small>Raw text file containing email addresses.</small>
+                            </div>
+                            <div class="form-group">
+                                <label for="extract-dest">Output File Path</label>
+                                <div class="input-wrapper">
+                                    <input type="text" id="extract-dest" placeholder="C:/path/to/output.txt" required>
+                                    <button type="button" class="path-btn" data-target="extract-dest" title="Use Demo Path"><i class="fa-solid fa-paste"></i></button>
+                                </div>
+                                <small>Text file where extracted email addresses will be saved.</small>
+                            </div>
+                            <button type="submit" class="btn btn-primary btn-run">
+                                <i class="fa-solid fa-play"></i> Run Email Extractor
+                            </button>
+                        </form>
+                    </div>
+                </div>
+
+                <!-- TAB 4: TITLE SCRAPER -->
+                <div id="tab-scrape-title" class="tab-pane">
+                    <div class="glass-card">
+                        <div class="card-header">
+                            <span class="badge">TASK 3</span>
+                            <h3>Webpage Title Scraper</h3>
+                        </div>
+                        <p class="card-desc">Fetch HTML content from a URL, locate the webpage title, and save it to a local text file.</p>
+                        
+                        <div class="concepts-row">
+                            <span>Key Concepts:</span>
+                            <span class="tag">requests</span>
+                            <span class="tag">re (regex)</span>
+                            <span class="tag">file handling</span>
+                        </div>
+
+                        <form id="form-scrape-title" class="config-form">
+                            <div class="form-group">
+                                <label for="scrape-url">Webpage URL</label>
+                                <div class="input-wrapper">
+                                    <input type="url" id="scrape-url" placeholder="https://example.com" required>
+                                    <button type="button" class="path-btn" data-target="scrape-url" title="Use Demo URL"><i class="fa-solid fa-paste"></i></button>
+                                </div>
+                                <small>Webpage to request and scrape the title from.</small>
+                            </div>
+                            <div class="form-group">
+                                <label for="scrape-dest">Output File Path</label>
+                                <div class="input-wrapper">
+                                    <input type="text" id="scrape-dest" placeholder="C:/path/to/output.txt" required>
+                                    <button type="button" class="path-btn" data-target="scrape-dest" title="Use Demo Path"><i class="fa-solid fa-paste"></i></button>
+                                </div>
+                                <small>File to store the scraped title string.</small>
+                            </div>
+                            <button type="submit" class="btn btn-primary btn-run">
+                                <i class="fa-solid fa-play"></i> Run Title Scraper
+                            </button>
+                        </form>
+                    </div>
+                </div>
+
+                <!-- TAB 5: HISTORY -->
+                <div id="tab-history" class="tab-pane">
+                    <div class="glass-card">
+                        <div class="card-header">
+                            <span class="badge">HISTORY</span>
+                            <h3>Daily Runs History</h3>
+                        </div>
+                        <p class="card-desc">Database logs of all task executions run by your user account, stored in MongoDB.</p>
+                        
+                        <div class="history-table-container">
+                            <div id="history-loading" class="history-spinner hidden">
+                                <i class="fa-solid fa-circle-notch fa-spin"></i> Loading run logs...
+                            </div>
+                            <div id="history-empty" class="history-empty">
+                                <i class="fa-solid fa-database"></i>
+                                <p>No executions logged yet. Run some tasks to save data to MongoDB.</p>
+                            </div>
+                            <table id="history-table" class="history-table hidden">
+                                <thead>
+                                    <tr>
+                                        <th>Date & Time</th>
+                                        <th>Task Type</th>
+                                        <th>Status</th>
+                                        <th>Actions</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="history-rows">
+                                    <!-- Populated programmatically -->
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+
+            </div>
+        </main>
+    </div>
+
+    <!-- AUTH OVERLAY MODAL -->
+    <div id="auth-overlay" class="auth-overlay">
+        <div class="glass-card auth-card">
+            <div class="auth-logo">
+                <i class="fa-solid fa-bolt"></i>
+                <h2>AutoPy</h2>
+            </div>
+            
+            <div class="auth-tabs">
+                <button id="btn-show-login" class="auth-tab-btn active">Login</button>
+                <button id="btn-show-register" class="auth-tab-btn">Register</button>
+            </div>
+
+            <!-- Login form -->
+            <form id="form-login" class="auth-form">
+                <div class="form-group">
+                    <label for="login-username">Username</label>
+                    <input type="text" id="login-username" placeholder="Type your username" required>
+                </div>
+                <div class="form-group">
+                    <label for="login-password">Password</label>
+                    <input type="password" id="login-password" placeholder="••••••••" required>
+                </div>
+                <button type="submit" class="btn btn-primary btn-run">Sign In</button>
+            </form>
+
+            <!-- Register form -->
+            <form id="form-register" class="auth-form hidden">
+                <div class="form-group">
+                    <label for="register-username">Username</label>
+                    <input type="text" id="register-username" placeholder="At least 3 characters" required>
+                </div>
+                <div class="form-group">
+                    <label for="register-password">Password</label>
+                    <input type="password" id="register-password" placeholder="At least 6 characters" required>
+                </div>
+                <button type="submit" class="btn btn-primary btn-run">Create Account</button>
+            </form>
+        </div>
+    </div>
+
+    <!-- LOG DETAIL POPUP MODAL -->
+    <div id="log-modal" class="modal-overlay hidden">
+        <div class="glass-card modal-card">
+            <div class="modal-header">
+                <h3><i class="fa-solid fa-file-lines text-primary"></i> Run Execution Log</h3>
+                <button id="close-modal-btn" class="close-btn">&times;</button>
+            </div>
+            <div class="modal-body">
+                <div class="modal-meta">
+                    <span class="meta-item"><strong>Task:</strong> <span id="modal-task-name">-</span></span>
+                    <span class="meta-item"><strong>Time:</strong> <span id="modal-timestamp">-</span></span>
+                    <span class="meta-item"><strong>Result:</strong> <span id="modal-status-badge" class="badge">-</span></span>
+                </div>
+                <div class="modal-params">
+                    <strong>Parameters:</strong>
+                    <pre><code id="modal-params-text"></code></pre>
+                </div>
+                <div class="modal-logs">
+                    <strong>Output Console Logs:</strong>
+                    <div id="modal-logs-body" class="logs-console"></div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Notification Toast -->
+    <div id="toast" class="toast hidden">
+        <span id="toast-icon"><i class="fa-solid fa-circle-check"></i></span>
+        <span id="toast-msg">Success!</span>
+    </div>
+
+    <!-- Client Javascript -->
+    <script src="{{ url_for('static', filename='js/script.js') }}"></script>
+</body>
+</html>
