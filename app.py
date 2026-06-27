@@ -10,6 +10,62 @@ app = Flask(__name__, template_folder='templates', static_folder='static')
 # Secret key for session management
 app.secret_key = os.environ.get('SECRET_KEY', 'super-secret-key-for-autopy-playground')
 
+# ==========================================================================
+# In-Memory Database Fallback Mock Classes (For offline / Vercel usage)
+# ==========================================================================
+class MockCollection:
+    def __init__(self):
+        self.data = []
+        
+    def find_one(self, query):
+        for item in self.data:
+            match = True
+            for k, v in query.items():
+                if item.get(k) != v:
+                    match = False
+                    break
+            if match:
+                return item
+        return None
+        
+    def insert_one(self, doc):
+        self.data.append(doc)
+        return doc
+        
+    def find(self, query=None):
+        if not query:
+            return self.data
+        results = []
+        for item in self.data:
+            match = True
+            for k, v in query.items():
+                if item.get(k) != v:
+                    match = False
+                    break
+            if match:
+                results.append(item)
+        return MockCursor(results)
+
+    def create_index(self, *args, **kwargs):
+        pass
+
+class MockCursor:
+    def __init__(self, data):
+        self.data = data
+        
+    def sort(self, key, direction=1):
+        # Sort by timestamp descending
+        if key == "timestamp" or key == "timestamp":
+            self.data.sort(key=lambda x: x.get('timestamp') or datetime.min, reverse=(direction == -1))
+        return self
+        
+    def limit(self, num):
+        self.data = self.data[:num]
+        return self
+        
+    def __iter__(self):
+        return iter(self.data)
+
 # MongoDB Connection Initialization
 mongo_uri = os.environ.get('MONGO_URI', 'mongodb://localhost:27017/')
 mongo_connected = False
@@ -33,7 +89,10 @@ try:
     print("Successfully connected to MongoDB!")
 except Exception as e:
     print(f"Warning: Could not connect to MongoDB: {str(e)}")
-    print("Application will run in unauthenticated/offline database mode.")
+    print("Falling back to In-Memory Database Mode.")
+    users_col = MockCollection()
+    history_col = MockCollection()
+    mongo_connected = False
 
 @app.route('/')
 def index():
@@ -43,9 +102,6 @@ def index():
 
 @app.route('/api/register', methods=['POST'])
 def register():
-    if not mongo_connected:
-        return jsonify({"success": False, "error": "Database connection is not available."}), 500
-        
     data = request.json or {}
     username = data.get('username', '').strip()
     password = data.get('password', '').strip()
@@ -76,9 +132,6 @@ def register():
 
 @app.route('/api/login', methods=['POST'])
 def login():
-    if not mongo_connected:
-        return jsonify({"success": False, "error": "Database connection is not available."}), 500
-        
     data = request.json or {}
     username = data.get('username', '').strip()
     password = data.get('password', '').strip()
@@ -115,7 +168,7 @@ def user_status():
 @app.route('/api/setup-demo', methods=['POST'])
 def setup_demo():
     username = session.get('username')
-    if not username and mongo_connected:
+    if not username:
         return jsonify({"success": False, "error": "Unauthorized. Please log in first."}), 401
         
     logs = []
@@ -208,7 +261,7 @@ Marketing:
 @app.route('/api/run-task', methods=['POST'])
 def run_task():
     username = session.get('username')
-    if not username and mongo_connected:
+    if not username:
         return jsonify({"success": False, "error": "Unauthorized. Please log in first."}), 401
         
     data = request.json or {}
@@ -247,8 +300,8 @@ def run_task():
     else:
         return jsonify({"success": False, "error": f"Unknown task: '{task_name}'"}), 400
 
-    # Save execution logs and details to MongoDB
-    if mongo_connected and username:
+    # Save execution logs and details to database/mock collection
+    if username:
         try:
             history_col.insert_one({
                 "username": username,
@@ -258,8 +311,8 @@ def run_task():
                 "logs": logs,
                 "timestamp": datetime.utcnow()
             })
-        except Exception as mongo_err:
-            print(f"Failed to record run history: {str(mongo_err)}")
+        except Exception as err:
+            print(f"Failed to record run history: {str(err)}")
 
     response_payload = {"success": success, "logs": logs}
     if result_data:
@@ -275,16 +328,13 @@ def get_history():
     if not username:
         return jsonify({"success": False, "error": "Unauthorized. Please log in first."}), 401
         
-    if not mongo_connected:
-        return jsonify({"success": False, "error": "Database connection is not available."}), 500
-        
     try:
         runs = list(history_col.find({"username": username}).sort("timestamp", -1).limit(50))
         
         serialized_runs = []
         for r in runs:
             serialized_runs.append({
-                "id": str(r['_id']),
+                "id": str(r.get('_id', id(r))),
                 "task": r.get('task'),
                 "params": r.get('params'),
                 "success": r.get('success'),

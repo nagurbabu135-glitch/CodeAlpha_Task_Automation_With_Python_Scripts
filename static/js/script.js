@@ -125,6 +125,19 @@ document.addEventListener('DOMContentLoaded', () => {
             const data = await response.json();
             authState = data;
             
+            // Update Database/Server status indicator dynamically
+            const statusDot = document.querySelector('.pulse-dot');
+            const statusText = document.querySelector('.status-text');
+            if (statusDot && statusText) {
+                if (authState.db_connected) {
+                    statusDot.className = 'pulse-dot green';
+                    statusText.textContent = 'DB: MongoDB';
+                } else {
+                    statusDot.className = 'pulse-dot orange';
+                    statusText.textContent = 'DB: In-Memory';
+                }
+            }
+
             if (authState.authenticated) {
                 authOverlay.classList.add('hidden');
                 userProfile.classList.remove('hidden');
