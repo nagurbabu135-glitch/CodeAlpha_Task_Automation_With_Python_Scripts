@@ -1,4 +1,5 @@
 import os
+import tempfile
 from datetime import datetime
 from flask import Flask, render_template, jsonify, request, session
 from werkzeug.security import generate_password_hash, check_password_hash
@@ -176,6 +177,19 @@ def setup_demo():
         base_dir = os.path.dirname(os.path.abspath(__file__))
         demo_dir = os.path.join(base_dir, 'demo_workspace')
         
+        # Check if the base directory is writeable (fails on Vercel read-only Lambda)
+        is_writeable = True
+        try:
+            test_file = os.path.join(base_dir, '.write_test')
+            with open(test_file, 'w') as f:
+                f.write('test')
+            os.remove(test_file)
+        except Exception:
+            is_writeable = False
+            
+        if not is_writeable:
+            demo_dir = os.path.join(tempfile.gettempdir(), 'autopy_demo_workspace')
+            
         # 1. Create structure
         source_jpg_dir = os.path.join(demo_dir, 'source_jpgs')
         dest_jpg_dir = os.path.join(demo_dir, 'dest_jpgs')
@@ -185,9 +199,11 @@ def setup_demo():
         for folder in [source_jpg_dir, dest_jpg_dir, input_data_dir, output_data_dir]:
             if not os.path.exists(folder):
                 os.makedirs(folder)
-                logs.append(f"Created folder: {os.path.relpath(folder, base_dir)}")
+                display_path = os.path.relpath(folder, base_dir) if is_writeable else f"temp/{os.path.basename(os.path.dirname(folder))}/{os.path.basename(folder)}"
+                logs.append(f"Created folder: {display_path}")
             else:
-                logs.append(f"Folder already exists: {os.path.relpath(folder, base_dir)}")
+                display_path = os.path.relpath(folder, base_dir) if is_writeable else f"temp/{os.path.basename(os.path.dirname(folder))}/{os.path.basename(folder)}"
+                logs.append(f"Folder already exists: {display_path}")
 
         # 2. Create dummy JPG/non-JPG files in source
         dummy_jpgs = [
